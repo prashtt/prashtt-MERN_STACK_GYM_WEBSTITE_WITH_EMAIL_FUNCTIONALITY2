@@ -1,11 +1,12 @@
-import nodeMailer from "nodemailer";
+import nodemailer from "nodemailer";
 
 export const sendEmail = async (options) => {
   try {
-    const transporter = nodeMailer.createTransport({
+    const transporter = nodemailer.createTransport({
+
       host: process.env.SMTP_HOST,
       port: process.env.SMTP_PORT,
-      secure: true, // Port 465 ke liye secure true hona chahiye
+      secure: true,
       service: process.env.SMTP_SERVICE,
       auth: {
         user: process.env.SMTP_MAIL,
@@ -22,7 +23,12 @@ export const sendEmail = async (options) => {
 
     const info = await transporter.sendMail(mailOptions);
     console.log("Email sent successfully:", info);
+    return { success: true, message: "Email sent successfully", info };
   } catch (error) {
     console.error("Error sending email:", error);
+    if (error.response) {
+      console.error("Response from the email service:", error.response);
+    }
+    return { success: false, message: "Error sending email", error };
   }
 };
