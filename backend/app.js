@@ -1,13 +1,19 @@
 import express from "express";
 import { config } from "dotenv";
 import cors from "cors";
+import path from "path";
+import { fileURLToPath } from "url";
 import { sendEmail } from "./utils/sendEmail.js";
 
+// Setup
 const app = express();
-const router = express.Router();
-
 config({ path: "./config.env" });
 
+// For __dirname with ES Modules
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// Middlewares
 app.use(
   cors({
     origin: [process.env.FRONTEND_URL],
@@ -15,11 +21,11 @@ app.use(
     credentials: true,
   })
 );
-
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-router.post("/send/mail", async (req, res) => {
+// API Route
+app.post("/send/mail", async (req, res) => {
   const { name, email, message } = req.body;
   if (!name || !email || !message) {
     return res.status(400).json({
@@ -46,8 +52,17 @@ router.post("/send/mail", async (req, res) => {
   }
 });
 
-app.use(router);
+// ==== Serve Frontend Static Files (for Render) ====
+const frontendPath = path.join(__dirname, "./client/dist"); // or build, depending on framework
 
+app.use(express.static(frontendPath));
+
+// SPA fallback (React Router support)
+app.get("*", (req, res) => {
+  res.sendFile(path.join(frontendPath, "index.html"));
+});
+
+// Start server
 app.listen(process.env.PORT, () => {
   console.log(`Server listening at port ${process.env.PORT}`);
 });
