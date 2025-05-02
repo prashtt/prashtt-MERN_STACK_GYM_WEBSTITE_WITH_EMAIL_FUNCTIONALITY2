@@ -1,17 +1,10 @@
 import express from "express";
 import { config } from "dotenv";
 import cors from "cors";
-import path from "path";
-import { fileURLToPath } from "url";
 import { sendEmail } from "./utils/sendEmail.js";
 
-// Setup
 const app = express();
 config({ path: "./config.env" });
-
-// For __dirname with ES Modules
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
 
 // Middlewares
 app.use(
@@ -23,6 +16,11 @@ app.use(
 );
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// Test Route (for Render)
+app.get("/", (req, res) => {
+  res.send("Backend is Live 🚀");
+});
 
 // API Route
 app.post("/send/mail", async (req, res) => {
@@ -52,17 +50,8 @@ app.post("/send/mail", async (req, res) => {
   }
 });
 
-// ==== Serve Frontend Static Files (for Render) ====
-const frontendPath = path.join(__dirname, "./client/dist"); // or build, depending on framework
-
-app.use(express.static(frontendPath));
-
-// SPA fallback (React Router support)
-app.get("*", (req, res) => {
-  res.sendFile(path.join(frontendPath, "index.html"));
-});
-
 // Start server
-app.listen(process.env.PORT, () => {
-  console.log(`Server listening at port ${process.env.PORT}`);
+const PORT = process.env.PORT || 4000;
+app.listen(PORT, () => {
+  console.log(`Server listening at port ${PORT}`);
 });
